@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: clusterip-postgre
+  labels:
+    app: postgre
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: portgre
+    tier: postgresql
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgre-pv-claim
+  labels:
+    app: postgre
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  labels:
+    app: postgre
+spec:
+  selector:
+    matchLabels:
+      app: postgre
+      tier: postgresql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: postgre
+        tier: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: postgres
+        env:
+          - name: POSTGRES_USER
+            valueFrom:
+              configMapKeyRef:
+                name: remote-postgresql-configmap
+                key: USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-postgre-secret
+                key: POSTGRE_PASSWORD
+          - name: POSTGRES_DB
+            valueFrom:
+              configMapKeyRef:
+                name: remote-postgresql-configmap
+                key: DATABASE
+        ports:
+          - containerPort: 5432
+        volumeMounts:
+        - name: postgre-persistent-storage
+          mountPath: /var/lib/postgre
+      volumes:
+      - name: postgre-persistent-storage
+        persistentVolumeClaim:
+          claimName: postgre-pv-claim
+
