@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ilab-nginx
+  labels:
+    app: ilab-nginx
+spec:
+  containers:
+    - name: ilab-nginx
+      image: nginx
+      ports:
+        - containerPort: 80

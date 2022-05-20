@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ilab-cpf2
+  labels:
+    app: ilab-cpf2
+spec:
+  containers:
+    - name: ilab-cpf2
+      image: didox/ilab-java-cpf
+      ports:
+        - containerPort: 8080
